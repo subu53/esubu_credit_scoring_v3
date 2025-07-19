@@ -53,7 +53,24 @@ def login_user(username, password):
     result = c.fetchone()
     conn.close()
     return result[0] if result else None
+    
+# --- Login form UI and logic ---
+st.title("Login Page")
+username = st.text_input("Username")
+password = st.text_input("Password", type="password")
+login_button = st.button("Login")
 
+if login_button:
+    result = login_user(username, password)
+    if result:
+        user, role = result
+        st.session_state["logged_in"] = True
+        st.session_state["username"] = user
+        st.session_state["role"] = role
+        st.experimental_rerun()
+    else:
+        st.error("Incorrect username or password")
+        
 def get_all_users():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
