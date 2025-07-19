@@ -7,13 +7,13 @@ import cloudpickle
 from sklearn.preprocessing import LabelEncoder
 
 #------------------ Login UI -------------------
-if st.session_state.get("logged_in"):
-    role = st.session_state["role"]
-    if role == "admin":
-        admin_dashboard()
-    elif role == "officer":
-        officer_dashboard()
-    st.stop()
+#if st.session_state.get("logged_in"):
+    #role = st.session_state["role"]
+    #if role == "admin":
+        #admin_dashboard()
+    #elif role == "officer":
+       # officer_dashboard()
+    #st.stop()
 
 # ------------------ DATABASE ------------------
 DB_FILE = 'users.db'
