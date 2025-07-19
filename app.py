@@ -51,8 +51,11 @@ def delete_user(username):
 
 # ------------------ MODEL ------------------
 @st.cache_resource
+import cloudpickle
+
 def load_model():
-    return joblib.load("credit_scoring_stacked_model.pkl")
+    with open("credit_scoring_stacked_model.pkl", "rb") as f:
+        return cloudpickle.load(f)
 
 model = load_model()
 
