@@ -53,10 +53,7 @@ def delete_user(username):
 # ------------------ MODEL ------------------
 @st.cache_resource
 def load_model():
-    with open("credit_scoring_stacked_model.pkl", "rb") as f:
-        return cloudpickle.load(f)
-
-model = load_model()
+    return joblib.load("credit_scoring_stacked_model.pkl")
 
 # ------------------ DECISION ENGINE ------------------
 def map_probability_to_score(prob, min_score=300, max_score=800):
