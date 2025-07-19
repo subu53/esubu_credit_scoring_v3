@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import sqlite3
+import cloudpickle
 from sklearn.preprocessing import LabelEncoder
 
 # ------------------ DATABASE ------------------
@@ -51,8 +52,6 @@ def delete_user(username):
 
 # ------------------ MODEL ------------------
 @st.cache_resource
-import cloudpickle
-
 def load_model():
     with open("credit_scoring_stacked_model.pkl", "rb") as f:
         return cloudpickle.load(f)
