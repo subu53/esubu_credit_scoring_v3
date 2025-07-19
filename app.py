@@ -52,7 +52,7 @@ def delete_user(username):
 # ------------------ MODEL ------------------
 @st.cache_resource
 def load_model():
-    return joblib.load("model/final_model.pkl")
+    return joblib.load("credit_scoring_stacked_model.pkl")
 
 model = load_model()
 
