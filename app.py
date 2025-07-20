@@ -4,6 +4,7 @@ import numpy as np
 import joblib
 import sqlite3
 import cloudpickle
+import pickle
 from sklearn.preprocessing import LabelEncoder
 
 # ------------------ DATABASE ------------------
