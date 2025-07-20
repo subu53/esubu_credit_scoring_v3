@@ -1,11 +1,10 @@
 streamlit
 pandas
+scikit-learn>=1.2,<1.4
 numpy
 lightgbm
-bcrypt
-catboost
 xgboost
-lightgbm==3.3.5
-scikit-learn==1.3.2
-cloudpickle==2.2.1
-joblib==1.3.2
+joblib
+bcrypt
+cloudpickle
+catboost
