@@ -123,14 +123,29 @@ def generate_message(decision, credit_score, amount=None):
 def run_decision_engine(model, input_df):
     if model is None:
         return None
-        
-    prob = model.predict_proba(input_df)[0][1]
 
+    # Load and apply preprocessing pipeline
+    try:
+        pipeline = joblib.load("preprocessing_pipeline.pkl")
+        input_transformed = pipeline.transform(input_df)
+    except Exception as e:
+        st.error(f"Error loading or applying preprocessing pipeline: {e}")
+        return None
+
+    # Predict probability
+    try:
+        prob = model.predict_proba(input_transformed)[0][1]
+    except Exception as e:
+        st.error(f"Prediction error: {e}")
+        return None
+
+    # Use original (non-transformed) values for logic decisions
     income = input_df['monthly_income'].values[0]
     repayment_history = input_df['repayment_history'].values[0]
     has_collateral = input_df['has_collateral'].values[0]
     missing_docs = input_df['missing_documents'].values[0]
 
+    # Business logic
     credit_score, decision = decision_logic(prob, income, repayment_history, has_collateral, missing_docs)
 
     approved_loan_amount = None
