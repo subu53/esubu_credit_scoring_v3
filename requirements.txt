@@ -9,3 +9,4 @@ cloudpickle
 catboost
 xgboost
 lightgbm==3.3.5
+scikit-learn==1.3.2
