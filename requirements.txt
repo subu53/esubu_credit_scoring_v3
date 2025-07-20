@@ -8,3 +8,4 @@ bcrypt
 cloudpickle
 catboost
 xgboost
+lightgbm==3.3.5
