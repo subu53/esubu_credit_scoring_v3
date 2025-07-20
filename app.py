@@ -2,68 +2,132 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-import sqlite3
 import cloudpickle
 import pickle
 from sklearn.preprocessing import LabelEncoder
+import os
+from pathlib import Path
+
+# Import our custom modules
+from config import *
+from utils import SecurityUtils, DatabaseUtils, log_user_action, validate_input, logger
 
 # ------------------ DATABASE ------------------
-DB_FILE = 'users.db'
-
 def create_user_table():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-        username TEXT PRIMARY KEY,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL CHECK (role IN ('admin', 'officer'))
-    )''')
-    conn.commit()
-
-    # 🔐 Seed default admin if not exists
-    c.execute("SELECT username FROM users WHERE username = 'admin'")
-    if not c.fetchone():
-        c.execute(
-            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-            ('admin', 'admin123', 'admin')
+    """Create users table with enhanced security"""
+    try:
+        query = '''CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('admin', 'officer')),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP
+        )'''
+        DatabaseUtils.execute_query(query)
+        
+        # 🔐 Seed default admin if not exists
+        existing_admin = DatabaseUtils.execute_query(
+            "SELECT username FROM users WHERE username = ?", 
+            (DEFAULT_ADMIN_USERNAME,), 
+            fetch_one=True
         )
-        conn.commit()
-
-    conn.close()
+        
+        if not existing_admin:
+            hashed_password = SecurityUtils.hash_password(DEFAULT_ADMIN_PASSWORD)
+            DatabaseUtils.execute_query(
+                "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                (DEFAULT_ADMIN_USERNAME, hashed_password, 'admin')
+            )
+            logger.info(f"Default admin user '{DEFAULT_ADMIN_USERNAME}' created")
+            
+    except Exception as e:
+        logger.error(f"Error creating user table: {e}")
+        st.error("Database initialization failed. Please check logs.")
 
 def add_user(username, password, role):
+    """Add user with hashed password"""
     try:
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, password, role))
-        conn.commit()
-        conn.close()
-        return True
-    except sqlite3.IntegrityError:
-        return False
+        # Validate input
+        if not username or not password or not role:
+            return False, "All fields are required"
+        
+        if role not in ['admin', 'officer']:
+            return False, "Invalid role"
+        
+        # Hash password
+        hashed_password = SecurityUtils.hash_password(password)
+        
+        # Insert user
+        DatabaseUtils.execute_query(
+            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+            (username, hashed_password, role)
+        )
+        
+        log_user_action(st.session_state.get('username', 'system'), 'USER_CREATED', f"Created user: {username}")
+        return True, "User created successfully"
+        
+    except Exception as e:
+        logger.error(f"Error adding user {username}: {e}")
+        return False, "Username already exists or database error"
 
 def login_user(username, password):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT role FROM users WHERE username = ? AND password = ?", (username, password))
-    result = c.fetchone()
-    conn.close()
-    return result[0] if result else None
+    """Authenticate user with hashed password"""
+    try:
+        user = DatabaseUtils.execute_query(
+            "SELECT password, role FROM users WHERE username = ?",
+            (username,),
+            fetch_one=True
+        )
+        
+        if user and SecurityUtils.verify_password(password, user['password']):
+            # Update last login
+            DatabaseUtils.execute_query(
+                "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE username = ?",
+                (username,)
+            )
+            
+            log_user_action(username, 'LOGIN_SUCCESS', "User logged in")
+            return user['role']
+        
+        log_user_action(username, 'LOGIN_FAILED', "Invalid credentials")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Login error for user {username}: {e}")
+        return None
 
 def get_all_users():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT username, role FROM users")
-    data = c.fetchall()
-    conn.close()
-    return data
+    """Get all users with enhanced error handling"""
+    try:
+        users = DatabaseUtils.execute_query(
+            "SELECT username, role, created_at, last_login FROM users ORDER BY username",
+            fetch_all=True
+        )
+        return [dict(user) for user in users] if users else []
+    except Exception as e:
+        logger.error(f"Error fetching users: {e}")
+        return []
 
 def delete_user(username):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("DELETE FROM users WHERE username = ?", (username,))
-    conn.commit()
-    conn.close()
+    """Delete user with logging"""
+    try:
+        if username == DEFAULT_ADMIN_USERNAME:
+            return False, "Cannot delete default admin user"
+        
+        rows_affected = DatabaseUtils.execute_query(
+            "DELETE FROM users WHERE username = ?", 
+            (username,)
+        )
+        
+        if rows_affected > 0:
+            log_user_action(st.session_state.get('username', 'system'), 'USER_DELETED', f"Deleted user: {username}")
+            return True, "User deleted successfully"
+        else:
+            return False, "User not found"
+            
+    except Exception as e:
+        logger.error(f"Error deleting user {username}: {e}")
+        return False, "Database error occurred"
 
 # ------------------ MODEL ------------------
 @st.cache_resource
@@ -275,10 +339,12 @@ def admin_dashboard():
             
             if add_submitted:
                 if new_username and new_password:
-                    if add_user(new_username, new_password, role):
-                        st.success(f"✅ User '{new_username}' added successfully!")
+                    success, message = add_user(new_username, new_password, role)
+                    if success:
+                        st.success(f"✅ {message}")
+                        st.rerun()
                     else:
-                        st.error("❌ Username already exists!")
+                        st.error(f"❌ {message}")
                 else:
                     st.warning("Please fill in all fields")
 
