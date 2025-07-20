@@ -6,3 +6,4 @@ lightgbm
 joblib
 bcrypt
 cloudpickle
+catboost
