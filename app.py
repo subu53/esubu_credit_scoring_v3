@@ -68,9 +68,13 @@ def delete_user(username):
 @st.cache_resource
 def load_model():
     try:
-        return joblib.load("credit_scoring_stacked_model.pkl")
-    except:
+        with open("credit_scoring_stacked_model.pkl", "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
         st.error("Model file not found. Please ensure 'credit_scoring_stacked_model.pkl' is in the app directory.")
+        return None
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
         return None
 
 # ------------------ DECISION ENGINE ------------------
