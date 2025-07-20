@@ -353,18 +353,23 @@ def admin_dashboard():
         users = get_all_users()
         
         if users:
-            for i, (user, user_role) in enumerate(users):
+            for i, user_data in enumerate(users):
+                username = user_data['username']
+                user_role = user_data['role']
                 col1, col2, col3 = st.columns([2, 1, 1])
                 with col1:
-                    st.write(f"**{user}** ({user_role})")
+                    st.write(f"**{username}** ({user_role})")
                 with col2:
                     st.write("🔒 Admin" if user_role == "admin" else "👤 Officer")
                 with col3:
-                    if user != "admin":  # Prevent deleting the default admin
-                        if st.button("🗑️ Delete", key=f"delete_{user}_{i}"):
-                            delete_user(user)
-                            st.success(f"User '{user}' deleted!")
-                            st.rerun()
+                    if username != DEFAULT_ADMIN_USERNAME:  # Prevent deleting the default admin
+                        if st.button("🗑️ Delete", key=f"delete_{username}_{i}"):
+                            success, message = delete_user(username)
+                            if success:
+                                st.success(f"✅ {message}")
+                                st.rerun()
+                            else:
+                                st.error(f"❌ {message}")
                 st.markdown("---")
         else:
             st.info("No users found")
