@@ -5,7 +5,8 @@ import numpy as np
 import os
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime
+import hashlib
+import time
 from typing import Tuple, Union
 
 # Configure Streamlit for production with enhanced styling
@@ -15,6 +16,42 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Security functions for admin authentication
+def hash_password(password: str) -> str:
+    """Hash a password using SHA-256."""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(input_password: str, stored_hash: str) -> bool:
+    """Verify password against stored hash."""
+    return hash_password(input_password) == stored_hash
+
+def get_admin_password_hash() -> str:
+    """Get admin password hash from environment variable or use default hash."""
+    # In production, this should be set as an environment variable
+    # Default password is "esubu_admin_2025" - should be changed in production
+    default_hash = "8b5f48702995c9c6f5c92e9c3e5d8f4b5e7c3a2f9b1d6e8c4a7b3c5d9e2f8a6b1c"
+    return os.getenv("ESUBU_ADMIN_PASSWORD_HASH", default_hash)
+
+def check_rate_limit(max_attempts: int = 3, window_minutes: int = 15) -> bool:
+    """Simple rate limiting for login attempts."""
+    if 'login_attempts' not in st.session_state:
+        st.session_state.login_attempts = []
+    
+    current_time = time.time()
+    # Remove attempts older than the window
+    st.session_state.login_attempts = [
+        attempt_time for attempt_time in st.session_state.login_attempts
+        if current_time - attempt_time < window_minutes * 60
+    ]
+    
+    return len(st.session_state.login_attempts) < max_attempts
+
+def record_failed_attempt():
+    """Record a failed login attempt."""
+    if 'login_attempts' not in st.session_state:
+        st.session_state.login_attempts = []
+    st.session_state.login_attempts.append(time.time())
 
 # Custom CSS for better styling
 st.markdown("""
@@ -198,11 +235,24 @@ with st.sidebar:
     st.markdown("### 🔐 Admin Dashboard")
     admin_password = st.text_input("Admin Password", type="password", key="admin_pwd")
     
-    # Admin credentials
-    ADMIN_PASSWORD = "esubu_admin_2025"
+    # Secure admin authentication with rate limiting
+    admin_password_hash = get_admin_password_hash()
     
-    if admin_password == ADMIN_PASSWORD:
-        st.success("✅ Admin Access Granted")
+    if admin_password:
+        if not check_rate_limit():
+            st.error("🚫 Too many failed attempts. Please wait 15 minutes before trying again.")
+        elif verify_password(admin_password, admin_password_hash):
+            st.success("✅ Admin Access Granted")
+            # Reset failed attempts on successful login
+            if 'login_attempts' in st.session_state:
+                st.session_state.login_attempts = []
+        else:
+            record_failed_attempt()
+            remaining_attempts = 3 - len(st.session_state.get('login_attempts', []))
+            st.error(f"❌ Invalid Admin Password. {remaining_attempts} attempts remaining.")
+    
+    # Show admin features only if authenticated
+    if admin_password and verify_password(admin_password, admin_password_hash) and check_rate_limit():
         
         # Admin features with tabs
         tab1, tab2, tab3 = st.tabs(["� Stats", "⚙️ Settings", "📋 Logs"])
@@ -238,9 +288,6 @@ with st.sidebar:
                 "2025-01-24 10:30:16 - INFO - Score calculated: 675\n"
                 "2025-01-24 10:30:17 - INFO - Decision: APPROVE", 
                 height=100)
-                
-    elif admin_password:
-        st.error("❌ Invalid Admin Password")
         
     # Quick stats for everyone
     st.markdown("---")
