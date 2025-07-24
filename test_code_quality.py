@@ -5,7 +5,7 @@ import numpy as np
 import joblib
 from sklearn.metrics import accuracy_score, precision_score
 
-def load_model(model_path: str) -> Optional[object]:
+def load_model(model_path: str) -> object:
     """
     Load a machine learning model from the specified file path.
     
@@ -13,10 +13,11 @@ def load_model(model_path: str) -> Optional[object]:
         model_path (str): Path to the model file
         
     Returns:
-        Optional[object]: Loaded model object or None if file doesn't exist
+        object: Loaded model object
         
     Raises:
         FileNotFoundError: If the model file doesn't exist
+        RuntimeError: If there's an error loading the model
     """
     try:
         model = joblib.load(model_path)
@@ -70,7 +71,7 @@ class CreditScorer:
         self.model = load_model(model_path)
         self.threshold = threshold
     
-    def predict(self, features: Union[pd.DataFrame, np.ndarray]) -> Optional[np.ndarray]:
+    def predict(self, features: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         """
         Make credit risk predictions on input features.
         
@@ -78,15 +79,13 @@ class CreditScorer:
             features: Input features for prediction
             
         Returns:
-            Optional[np.ndarray]: Binary predictions (True/False) or None if model is invalid
+            np.ndarray: Binary predictions (True/False)
             
         Raises:
             ValueError: If model doesn't have predict_proba method
             TypeError: If features are not in expected format
+            RuntimeError: If prediction fails
         """
-        if self.model is None:
-            return None
-            
         if not hasattr(self.model, 'predict_proba'):
             raise ValueError("Model must have 'predict_proba' method for probability predictions")
             

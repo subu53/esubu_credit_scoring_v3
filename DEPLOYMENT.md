@@ -13,10 +13,9 @@
 - **Start Command**: `streamlit run app.py --server.port=$PORT --server.address=0.0.0.0`
 - **Environment**: Python 3.9
 
-### 3. One-Click Deploy
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+### 3. Manual Deployment Steps
 
-### 4. Manual Deployment Steps
+Since repository-specific one-click deploy requires pre-configuration, follow these manual steps:
 
 1. **Connect Repository**
    - Go to [Render Dashboard](https://dashboard.render.com)
@@ -39,7 +38,7 @@
    - Click "Create Web Service"
    - Wait for build and deployment
 
-### 5. Expected Issues & Solutions
+### 4. Expected Issues & Solutions
 
 #### Common Deployment Errors:
 1. **Model file not found**
@@ -56,13 +55,20 @@
 4. **Package version conflicts**
    - Pin specific versions in requirements.txt
 
-### 6. Health Check
+### 5. App URL & Health Check
 Once deployed, your app will be available at:
 ```
 https://esubu-credit-scoring.onrender.com
 ```
 
-### 7. Monitoring
+Health Check Endpoint:
+```
+https://esubu-credit-scoring.onrender.com/healthz
+```
+
+Note: Streamlit apps don't natively support custom endpoints. Render will monitor the main app endpoint for health checks.
+
+### 6. Monitoring
 - Check Render logs for errors
 - Monitor memory usage
 - Set up uptime monitoring

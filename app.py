@@ -46,11 +46,6 @@ def decision_from_score(score: float) -> Tuple[str, str]:
     else:
         return "Approve", "🟢"
 
-# Health check endpoint for Render
-def health_check():
-    """Health check endpoint for deployment monitoring."""
-    return {"status": "healthy", "model_loaded": model is not None}
-
 # Main app interface
 st.title("💳 Esubu Sacco Credit Scoring System")
 st.markdown("---")
