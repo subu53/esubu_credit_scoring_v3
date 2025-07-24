@@ -1,0 +1,77 @@
+# CodeRabbit configuration for Esubu AI Credit Scoring System
+# This file configures how CodeRabbit AI reviews your code
+
+# Review settings
+reviews:
+  # Enable auto-reviews on pull requests
+  auto_review: true
+  
+  # Review depth
+  review_level: "comprehensive"
+  
+  # Focus areas for this ML project
+  focus_areas:
+    - "security"
+    - "performance"
+    - "best_practices"
+    - "data_science"
+    - "machine_learning"
+
+# Language-specific settings
+languages:
+  python:
+    # Python-specific review criteria
+    style_guide: "pep8"
+    complexity_threshold: 10
+    enable_type_checking: true
+    
+# File patterns to review
+include_patterns:
+  - "*.py"
+  - "*.ipynb"
+  - "*.md"
+  - "*.yml"
+  - "*.yaml"
+  - "requirements.txt"
+
+# File patterns to exclude from review
+exclude_patterns:
+  - "*.pkl"
+  - "*.model"
+  - "__pycache__/*"
+  - ".git/*"
+  - "*.log"
+
+# ML/Data Science specific checks
+custom_rules:
+  # Data handling best practices
+  - name: "data_validation"
+    description: "Check for proper data validation and error handling"
+    
+  # Model security
+  - name: "model_security" 
+    description: "Review model loading and serialization security"
+    
+  # Performance optimization
+  - name: "ml_performance"
+    description: "Check for efficient data processing and model inference"
+
+# Integration settings
+integrations:
+  github:
+    # Comment on PRs
+    pr_comments: true
+    
+    # Create review summaries
+    review_summary: true
+    
+    # Auto-assign reviewers for ML changes
+    auto_assign_reviewers: true
+
+# Notification preferences
+notifications:
+  # Get notified about high-severity issues
+  high_priority_issues: true
+  
+  # Weekly summary reports
+  weekly_summary: true

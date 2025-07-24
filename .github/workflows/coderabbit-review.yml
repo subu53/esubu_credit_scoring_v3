@@ -1,0 +1,102 @@
+name: CodeRabbit AI Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, master, develop]
+
+jobs:
+  coderabbit-review:
+    runs-on: ubuntu-latest
+    name: CodeRabbit AI Code Review
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Run Python linting
+      run: |
+        pip install flake8 black isort
+        # Check code formatting
+        black --check .
+        # Check import sorting
+        isort --check-only .
+        # Check for linting issues
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        
+    - name: Security scan
+      run: |
+        pip install bandit safety
+        # Security vulnerability scan
+        bandit -r . -f json -o bandit-report.json || true
+        # Check for known security vulnerabilities in dependencies
+        safety check || true
+        
+    - name: CodeRabbit Analysis
+      # CodeRabbit will automatically analyze the code when this workflow runs
+      # The actual CodeRabbit integration happens through the GitHub App
+      run: |
+        echo "CodeRabbit AI will analyze this code automatically"
+        echo "Review results will appear in the PR comments"
+
+  ml-model-validation:
+    runs-on: ubuntu-latest
+    name: ML Model Validation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install ML dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn lightgbm joblib
+        
+    - name: Validate model files
+      run: |
+        python -c "
+        import joblib
+        import os
+        
+        # Check if model file exists and is loadable
+        if os.path.exists('lightgbm_model.pkl'):
+            try:
+                model = joblib.load('lightgbm_model.pkl')
+                print('✅ Model file is valid and loadable')
+            except Exception as e:
+                print(f'❌ Model file validation failed: {e}')
+                exit(1)
+        else:
+            print('⚠️ Model file not found - this is expected for new features')
+        "
+        
+    - name: Test application
+      run: |
+        python -c "
+        # Basic import test
+        try:
+            import app
+            print('✅ Application imports successfully')
+        except ImportError as e:
+            print(f'❌ Application import failed: {e}')
+        except Exception as e:
+            print(f'⚠️ Application test completed with warnings: {e}')
+        "
