@@ -1,0 +1,23 @@
+# Render Deployment Configuration
+
+## Service Type
+- **Type**: Web Service
+- **Environment**: Python 3.9+
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `streamlit run app.py --server.port=$PORT --server.address=0.0.0.0`
+
+## Environment Variables
+- `PYTHON_VERSION`: 3.9
+- `PORT`: Automatically set by Render
+
+## Health Check
+- **Path**: `/healthz` (we'll add this endpoint)
+- **Timeout**: 30 seconds
+
+## Auto-Deploy
+- **Branch**: `master`
+- **Auto-Deploy**: On push to master
+
+## Resource Requirements
+- **Memory**: 512MB (minimum for ML models)
+- **CPU**: Shared (free tier)
