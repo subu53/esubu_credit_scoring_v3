@@ -1,0 +1,34 @@
+# CodeRabbit Project Configuration
+project:
+  name: "Esubu AI Credit Scoring System"
+  type: "machine_learning"
+  language: "python"
+  framework: "streamlit"
+  
+# Allow CodeRabbit to make these types of changes
+permissions:
+  auto_fix: true
+  auto_commit: true
+  create_pull_requests: true
+  modify_files:
+    - "*.py"
+    - "*.md"
+    - "requirements.txt"
+    - "*.yml"
+    - "*.yaml"
+  
+# Specific instructions for CodeRabbit
+instructions: |
+  You are reviewing a machine learning credit scoring system. Please:
+  
+  1. Ensure all code follows PEP8 standards
+  2. Add proper error handling for model loading and data processing
+  3. Improve code documentation and add missing docstrings
+  4. Optimize performance for large datasets
+  5. Ensure security best practices for model serialization
+  6. Add type hints where missing
+  7. Improve variable naming for clarity
+  8. Suggest better ML practices where applicable
+  
+  Feel free to make direct changes to improve code quality,
+  but always explain your changes in commit messages.

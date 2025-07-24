@@ -9,6 +9,12 @@ reviews:
   # Review depth
   review_level: "comprehensive"
   
+  # Enable auto-fix capabilities
+  auto_fix: true
+  
+  # Allow CodeRabbit to make commits
+  auto_commit: true
+  
   # Focus areas for this ML project
   focus_areas:
     - "security"
@@ -24,6 +30,19 @@ languages:
     style_guide: "pep8"
     complexity_threshold: 10
     enable_type_checking: true
+    
+    # Auto-fix settings for Python
+    auto_fix:
+      # Enable automatic formatting
+      format_code: true
+      # Fix import organization
+      organize_imports: true
+      # Fix simple syntax issues
+      fix_syntax: true
+      # Add missing docstrings
+      add_docstrings: true
+      # Fix security vulnerabilities
+      fix_security_issues: true
     
 # File patterns to review
 include_patterns:
@@ -47,14 +66,36 @@ custom_rules:
   # Data handling best practices
   - name: "data_validation"
     description: "Check for proper data validation and error handling"
+    auto_fix: true
     
   # Model security
   - name: "model_security" 
     description: "Review model loading and serialization security"
+    auto_fix: true
     
   # Performance optimization
   - name: "ml_performance"
     description: "Check for efficient data processing and model inference"
+    auto_fix: true
+
+# Auto-fix configuration
+auto_fix:
+  # Types of fixes CodeRabbit can make automatically
+  enabled_fixes:
+    - "formatting"
+    - "imports"
+    - "docstrings"
+    - "type_hints"
+    - "security_fixes"
+    - "performance_improvements"
+    - "code_style"
+    - "ml_best_practices"
+  
+  # Commit message template for auto-fixes
+  commit_message_template: "🤖 CodeRabbit: Auto-fix {fix_type} in {file_name}"
+  
+  # Branch naming for auto-fix commits
+  branch_prefix: "coderabbit/auto-fix/"
 
 # Integration settings
 integrations:
@@ -67,6 +108,15 @@ integrations:
     
     # Auto-assign reviewers for ML changes
     auto_assign_reviewers: true
+    
+    # Allow CodeRabbit to make commits
+    commit_permissions: true
+    
+    # Auto-merge simple fixes (optional)
+    auto_merge_fixes: false
+    
+    # Create fixup commits for suggestions
+    create_fixup_commits: true
 
 # Notification preferences
 notifications:
