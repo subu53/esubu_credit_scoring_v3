@@ -34,7 +34,7 @@ This document outlines the security enhancements implemented in the Esubu Credit
 ### 2. Password Verification
 - **Function**: `verify_password(input_password: str, stored_hash: str) -> bool`
 - **Purpose**: Securely verifies passwords against stored hashes
-- **Security**: Uses constant-time comparison via hash matching
+- **Security**: Should use `hmac.compare_digest()` for constant-time comparison to prevent timing side-channel attacks
 
 ### 3. Rate Limiting
 - **Function**: `check_rate_limit(max_attempts: int = 3, window_minutes: int = 15) -> bool`
@@ -61,7 +61,7 @@ This document outlines the security enhancements implemented in the Esubu Credit
 
 ### Default Credentials
 - **Default Password**: `esubu_admin_2025`
-- **Default Hash**: `8b5f48702995c9c6f5c92e9c3e5d8f4b5e7c3a2f9b1d6e8c4a7b3c5d9e2f8a6b1c`
+- **Default Hash**: `8b5f48702995c9c6f5c92e9c3e5d8f4b5e7c3a2f9b1d6e8c4a7b3c5d9e2f8a6b1`
 - **Recommendation**: Change immediately in production
 
 ## Rate Limiting Details

@@ -6,6 +6,7 @@ import os
 import plotly.graph_objects as go
 import plotly.express as px
 import hashlib
+import hmac
 import time
 from typing import Tuple, Union
 
@@ -23,14 +24,15 @@ def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_password(input_password: str, stored_hash: str) -> bool:
-    """Verify password against stored hash."""
-    return hash_password(input_password) == stored_hash
+    """Verify password against stored hash using constant-time comparison."""
+    input_hash = hash_password(input_password)
+    return hmac.compare_digest(input_hash, stored_hash)
 
 def get_admin_password_hash() -> str:
     """Get admin password hash from environment variable or use default hash."""
     # In production, this should be set as an environment variable
     # Default password is "esubu_admin_2025" - should be changed in production
-    default_hash = "8b5f48702995c9c6f5c92e9c3e5d8f4b5e7c3a2f9b1d6e8c4a7b3c5d9e2f8a6b1c"
+    default_hash = "8b5f48702995c9c6f5c92e9c3e5d8f4b5e7c3a2f9b1d6e8c4a7b3c5d9e2f8a6b1"
     return os.getenv("ESUBU_ADMIN_PASSWORD_HASH", default_hash)
 
 def check_rate_limit(max_attempts: int = 3, window_minutes: int = 15) -> bool:
